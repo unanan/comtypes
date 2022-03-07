@@ -85,7 +85,8 @@ class ReturnHRESULT(Exception):
 ##class IDLWarning(UserWarning):
 ##    "Warn about questionable type information"
 
-from comtypes.GUID import GUID
+# from comtypes.GUID import GUID
+GUID="9fdc399b-8549-4431-bf43-f52a5bb7cfbb" # for no bug
 _GUID = GUID
 IID = GUID
 DWORD = c_ulong
