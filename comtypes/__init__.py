@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(NullHandler())
 
 from ctypes import *
-from _ctypes import COMError
+from _ctypes import ArgumentError
 from comtypes import patcher
 
 def _check_version(actual, tlib_cached_mtime=None):
@@ -43,7 +43,7 @@ def _check_version(actual, tlib_cached_mtime=None):
             raise ImportError("Typelib different than module")
 
 try:
-    COMError()
+    ArgumentError()
 except TypeError:
     pass
 else:
@@ -56,8 +56,8 @@ else:
             self.hresult = hresult
             self.text = text
             self.details = details
-            super(COMError, self).__init__(hresult, text, details)
-        COMError.__init__ = __init__
+            super(ArgumentError, self).__init__(hresult, text, details)
+        ArgumentError.__init__ = __init__
     monkeypatch_COMError()
     del monkeypatch_COMError
 
@@ -377,7 +377,7 @@ class _cominterface_meta(type):
 
                     try:
                         result = self.Item(*args)
-                    except COMError as err:
+                    except ArgumentError as err:
                         (hresult, text, details) = err.args
                         if hresult == -2147352565:  # DISP_E_BADINDEX
                             raise IndexError("invalid index")
@@ -396,7 +396,7 @@ class _cominterface_meta(type):
                     "Attempt 'self.Item[index] = value'"
                     try:
                         self.Item[index] = value
-                    except COMError as err:
+                    except ArgumentError as err:
                         (hresult, text, details) = err.args
                         if hresult == -2147352565:  # DISP_E_BADINDEX
                             raise IndexError("invalid index")
