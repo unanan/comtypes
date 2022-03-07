@@ -61,7 +61,7 @@ def GetBestInterface(punk):
         try:
             pci = punk.QueryInterface(comtypes.typeinfo.IProvideClassInfo)
             logger.debug("Does implement IProvideClassInfo")
-        except comtypes.COMError:
+        except comtypes.ArgumentError:
             # Some COM objects support IProvideClassInfo2, but not IProvideClassInfo.
             # These objects are broken, but we support them anyway.
             logger.debug("Does NOT implement IProvideClassInfo, trying IProvideClassInfo2")
@@ -82,16 +82,16 @@ def GetBestInterface(punk):
             index = 0
         href = tinfo.GetRefTypeOfImplType(index)
         tinfo = tinfo.GetRefTypeInfo(href)
-    except comtypes.COMError:
+    except comtypes.ArgumentError:
         logger.debug("Does NOT implement IProvideClassInfo/IProvideClassInfo2")
         try:
             pdisp = punk.QueryInterface(comtypes.automation.IDispatch)
-        except comtypes.COMError:
+        except comtypes.ArgumentError:
             logger.debug("No Dispatch interface: %s", punk)
             return punk
         try:
             tinfo = pdisp.GetTypeInfo(0)
-        except comtypes.COMError:
+        except comtypes.ArgumentError:
             pdisp = comtypes.client.dynamic.Dispatch(pdisp)
             logger.debug("IDispatch.GetTypeInfo(0) failed: %s" % pdisp)
             return pdisp
@@ -99,7 +99,7 @@ def GetBestInterface(punk):
     logger.debug("Default interface is %s", typeattr.guid)
     try:
         punk.QueryInterface(comtypes.IUnknown, typeattr.guid)
-    except comtypes.COMError:
+    except comtypes.ArgumentError:
         logger.debug("Does not implement default interface, returning dynamic object")
         return comtypes.client.dynamic.Dispatch(punk)
 
@@ -147,7 +147,7 @@ class Constants(object):
     def __getattr__(self, name):
         try:
             kind, desc = self.tcomp.Bind(name)
-        except (WindowsError, comtypes.COMError):
+        except (WindowsError, comtypes.ArgumentError):
             raise AttributeError(name)
         if kind != "variable":
             raise AttributeError(name)

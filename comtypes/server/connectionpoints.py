@@ -1,5 +1,5 @@
 from ctypes import *
-from comtypes import IUnknown, COMObject, COMError
+from comtypes import IUnknown, COMObject, ArgumentError
 from comtypes.hresult import *
 from comtypes.typeinfo import LoadRegTypeLib
 from comtypes.connectionpoints import IConnectionPoint
@@ -30,7 +30,7 @@ class ConnectionPointImpl(COMObject):
         logger.debug("Advise")
         try:
             ptr = pUnk.QueryInterface(self._sink_interface)
-        except COMError:
+        except ArgumentError:
             return CONNECT_E_CANNOTCONNECT
         pdwCookie[0] = self._cookie = self._cookie + 1
         self._connections[self._cookie] = ptr
@@ -61,7 +61,7 @@ class ConnectionPointImpl(COMObject):
             for key, p in self._connections.items():
                 try:
                     result = p.Invoke(dispid, *args, **kw)
-                except COMError as details:
+                except ArgumentError as details:
                     if details.hresult == -2147023174:
                         logger.warning("_call_sinks(%s, %s, *%s, **%s) failed; removing connection",
                                        self, name, args, kw,
@@ -79,7 +79,7 @@ class ConnectionPointImpl(COMObject):
             for p in self._connections.values():
                 try:
                     result = getattr(p, name)(*args, **kw)
-                except COMError as details:
+                except ArgumentError as details:
                     if details.hresult == -2147023174:
                         logger.warning("_call_sinks(%s, %s, *%s, **%s) failed; removing connection",
                                        self, name, args, kw,

@@ -36,7 +36,7 @@ class _AdviseConnection(object):
         try:
             if self.cookie is not None:
                 self.cp.Unadvise(self.cookie)
-        except (comtypes.COMError, WindowsError):
+        except (comtypes.ArgumentError, WindowsError):
             # Are we sure we want to ignore errors here?
             pass
 
@@ -47,7 +47,7 @@ def FindOutgoingInterface(source):
     try:
         pci = source.QueryInterface(comtypes.typeinfo.IProvideClassInfo2)
         guid = pci.GetGUID(1)
-    except comtypes.COMError:
+    except comtypes.ArgumentError:
         pass
     else:
         # another try: block needed?

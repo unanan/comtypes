@@ -124,7 +124,7 @@ class Dispatch(object):
         except KeyError:
             try:
                 descr = self._tcomp.Bind(name, invkind)[1]
-            except comtypes.COMError:
+            except comtypes.ArgumentError:
                 info = None
             else:
                 # Using a separate instance to store interesting
@@ -238,7 +238,7 @@ class Dispatch(object):
                                         DISPATCH_METHOD | DISPATCH_PROPERTYGET,
                                         0,
                                         *args)
-        except comtypes.COMError:
+        except comtypes.ArgumentError:
             return iter(self)[arg]
 
     def __setitem__(self, name, value):

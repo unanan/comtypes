@@ -5,7 +5,7 @@ import comtypes.typeinfo
 import comtypes.client
 import comtypes.client.lazybind
 
-from comtypes import COMError, IUnknown, _is_object
+from comtypes import ArgumentError, IUnknown, _is_object
 import comtypes.hresult as hres
 
 # These errors generally mean the property or method exists,
@@ -27,7 +27,7 @@ def Dispatch(obj):
     if isinstance(obj, ctypes.POINTER(comtypes.automation.IDispatch)):
         try:
             tinfo = obj.GetTypeInfo(0)
-        except (comtypes.COMError, WindowsError):
+        except (comtypes.ArgumentError, WindowsError):
             return _Dispatch(obj)
         return comtypes.client.lazybind.Dispatch(obj, tinfo)
     return obj
@@ -119,7 +119,7 @@ class _Dispatch(object):
         flags = comtypes.automation.DISPATCH_PROPERTYGET
         try:
             result = self._comobj.Invoke(dispid, _invkind=flags)
-        except COMError as err:
+        except ArgumentError as err:
             (hresult, text, details) = err.args
             if hresult in ERRORS_BAD_CONTEXT:
                 result = MethodCaller(dispid, self)

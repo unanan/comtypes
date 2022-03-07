@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 
-from comtypes import COMError, ReturnHRESULT, instancemethod, _encode_idl
+from comtypes import ArgumentError, ReturnHRESULT, instancemethod, _encode_idl
 from comtypes.errorinfo import ISupportErrorInfo, ReportException, ReportError
 from comtypes import IPersist
 from comtypes.hresult import (
@@ -53,7 +53,7 @@ def HRESULT_FROM_WIN32(errcode):
 def winerror(exc):
     """Return the windows error code from a WindowsError or COMError
     instance."""
-    if isinstance(exc, COMError):
+    if isinstance(exc, ArgumentError):
         return exc.hresult
     elif isinstance(exc, WindowsError):
         code = exc.winerror
@@ -85,7 +85,7 @@ def catch_errors(obj, mth, paramflags, interface, mthname):
             (hresult, text) = err.args
             return ReportError(text, iid=interface._iid_, clsid=clsid,
                                hresult=hresult)
-        except (COMError, WindowsError) as details:
+        except (ArgumentError, WindowsError) as details:
             _error("Exception in %s.%s implementation:", interface.__name__,
                    mthname, exc_info=True)
             return HRESULT_FROM_WIN32(winerror(details))
@@ -164,7 +164,7 @@ def hack(inst, mth, paramflags, interface, mthname):
             (hresult, text) = err.args
             return ReportError(text, iid=interface._iid_, clsid=clsid,
                                hresult=hresult)
-        except COMError as err:
+        except ArgumentError as err:
             (hr, text, details) = err.args
             _error("Exception in %s.%s implementation:", interface.__name__,
                    mthname, exc_info=True)
@@ -625,7 +625,7 @@ class COMObject(object):
         # interface pointers from COMObject instances.
         ptr = self._com_pointers_.get(interface._iid_, None)
         if ptr is None:
-            raise COMError(E_NOINTERFACE, FormatError(E_NOINTERFACE),
+            raise ArgumentError(E_NOINTERFACE, FormatError(E_NOINTERFACE),
                            (None, None, 0, None, None))
         # CopyComPointer(src, dst) calls AddRef!
         result = POINTER(interface)()

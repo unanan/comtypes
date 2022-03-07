@@ -7,7 +7,7 @@ import sys
 from ctypes import *
 from ctypes import _Pointer
 from _ctypes import CopyComPointer
-from comtypes import IUnknown, GUID, IID, STDMETHOD, BSTR, COMMETHOD, COMError
+from comtypes import IUnknown, GUID, IID, STDMETHOD, BSTR, COMMETHOD, ArgumentError
 from comtypes.hresult import *
 from comtypes.patcher import Patch
 from comtypes import npsupport
@@ -790,13 +790,13 @@ class IDispatch(IUnknown):
         try:
             self.__com_Invoke(dispid, riid_null, _lcid, _invkind, byref(dp),
                               byref(result), byref(excepinfo), byref(argerr))
-        except COMError as err:
+        except ArgumentError as err:
             (hresult, text, details) = err.args
             if hresult == DISP_E_EXCEPTION:
                 details = (excepinfo.bstrDescription, excepinfo.bstrSource,
                            excepinfo.bstrHelpFile, excepinfo.dwHelpContext,
                            excepinfo.scode)
-                raise COMError(hresult, text, details)
+                raise ArgumentError(hresult, text, details)
             elif hresult == DISP_E_PARAMNOTFOUND:
                 # MSDN says: You get the error DISP_E_PARAMNOTFOUND
                 # when you try to set a property and you have not
@@ -804,13 +804,13 @@ class IDispatch(IUnknown):
                 # elements of your DISPPARAMS structure.
                 #
                 # So, this looks like a bug.
-                raise COMError(hresult, text, argerr.value)
+                raise ArgumentError(hresult, text, argerr.value)
             elif hresult == DISP_E_TYPEMISMATCH:
                 # MSDN: One or more of the arguments could not be
                 # coerced.
                 #
                 # Hm, should we raise TypeError, or COMError?
-                raise COMError(hresult, text,
+                raise ArgumentError(hresult, text,
                                ("TypeError: Parameter %s" % (argerr.value + 1),
                                 args))
             raise
